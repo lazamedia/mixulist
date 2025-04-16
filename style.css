@@ -1110,3 +1110,24 @@ header {
     background-color: var(--primary-color);
     color: white;
 }
+
+
+.notification-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    transition: all 0.3s;
+  }
+  
+  .notification-toggle-btn:hover {
+    background-color: var(--light-bg);
+    color: var(--primary-color);
+  }
+  
+  .notification-toggle-btn.active {
+    color: var(--primary-color);
+  }

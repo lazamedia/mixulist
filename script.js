@@ -1343,3 +1343,115 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial load
     loadTasks();
 });
+
+// Fungsi untuk memeriksa deadline tugas
+function checkTaskDeadlines() {
+    if (!("Notification" in window)) {
+        return; // Browser tidak mendukung notifikasi
+    }
+    
+    if (Notification.permission !== 'granted') {
+        return; // Belum mendapat izin notifikasi
+    }
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    // Ambil tugas yang belum selesai
+    const activeTasks = tasks.filter(task => !task.completed);
+    
+    activeTasks.forEach(task => {
+        if (!task.date) return;
+        
+        const taskDate = new Date(task.date);
+        taskDate.setHours(0, 0, 0, 0);
+        
+        // Cek apakah tugas sudah dinotifikasi hari ini
+        const notifiedTasks = JSON.parse(localStorage.getItem('notifiedTasks') || '{}');
+        const notificationKey = `${task.id}-${today.toDateString()}`;
+        
+        if (notifiedTasks[notificationKey]) {
+            return; // Sudah dinotifikasi hari ini
+        }
+        
+        // Deadline hari ini
+        if (taskDate.getTime() === today.getTime()) {
+            showTaskNotification(
+                'Deadline Hari Ini!', 
+                `"${task.title}" jatuh tempo hari ini pada pukul ${task.time}`, 
+                task.id
+            );
+            
+            // Catat bahwa tugas telah dinotifikasi
+            notifiedTasks[notificationKey] = true;
+            localStorage.setItem('notifiedTasks', JSON.stringify(notifiedTasks));
+        }
+        
+        // Deadline besok
+        else if (taskDate.getTime() === tomorrow.getTime()) {
+            showTaskNotification(
+                'Deadline Besok!', 
+                `"${task.title}" akan jatuh tempo besok pada pukul ${task.time}`, 
+                task.id
+            );
+            
+            // Catat bahwa tugas telah dinotifikasi
+            notifiedTasks[notificationKey] = true;
+            localStorage.setItem('notifiedTasks', JSON.stringify(notifiedTasks));
+        }
+    });
+}
+
+// Fungsi untuk menampilkan notifikasi browser
+function showTaskNotification(title, body, taskId) {
+    if (Notification.permission === 'granted') {
+        const notification = new Notification(title, {
+            body: body,
+            icon: 'img/notification-icon.png' // Jika ada icon
+        });
+        
+        notification.onclick = function() {
+            // Buka aplikasi dan fokus ke tugas tersebut
+            window.focus();
+            viewTaskDetails(taskId);
+        };
+    }
+}
+
+// Minta izin notifikasi saat aplikasi dimuat
+function requestNotificationPermission() {
+    if (!("Notification" in window)) {
+        console.log("Browser ini tidak mendukung notifikasi desktop");
+        return;
+    }
+    
+    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                showNotification('Notifikasi Diaktifkan', 'Anda akan menerima notifikasi untuk tugas yang mendekati deadline', 'success');
+                
+                // Segera cek deadline setelah izin diberikan
+                checkTaskDeadlines();
+            }
+        });
+    }
+}
+
+// Panggil fungsi izin notifikasi saat aplikasi dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    // (kode yang sudah ada)
+    
+    // Minta izin notifikasi
+    requestNotificationPermission();
+    
+    // Cek deadline saat load
+    checkTaskDeadlines();
+    
+    // Setup cek deadline otomatis (setiap jam)
+    setInterval(checkTaskDeadlines, 3600000);
+    
+    // (lanjutkan kode yang sudah ada)
+});
