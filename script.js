@@ -20,6 +20,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const notificationTitle = document.getElementById('notification-title');
     const notificationMessage = document.getElementById('notification-message');
     
+    // DOM Elements - Categories
+    const manageCategoriesBtn = document.getElementById('manage-categories-btn');
+    const categoriesModal = document.getElementById('categoriesModal');
+    const closeCategoriesModalBtn = document.getElementById('closeCategoriesModalBtn');
+    const categoriesList = document.getElementById('categories-list');
+    const newCategoryNameInput = document.getElementById('newCategoryName');
+    const newCategoryColorInput = document.getElementById('newCategoryColor');
+    const addCategoryBtn = document.getElementById('addCategoryBtn');
+    const saveCategoriesBtn = document.getElementById('saveCategoriesBtn');
+    const categoryListContainer = document.getElementById('category-list');
+    const colorPreview = document.querySelector('.color-preview');
+    
     // DOM Elements - Tasks Lists
     const activeTasksList = document.getElementById('active-tasks');
     const completedTasksList = document.getElementById('completed-tasks');
@@ -58,10 +70,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const highPriorityCountEl = document.getElementById('high-priority-count');
     const mediumPriorityCountEl = document.getElementById('medium-priority-count');
     const lowPriorityCountEl = document.getElementById('low-priority-count');
-    const workCountEl = document.getElementById('work-count');
-    const personalCountEl = document.getElementById('personal-count');
-    const shoppingCountEl = document.getElementById('shopping-count');
-    const healthCountEl = document.getElementById('health-count');
     
     // DOM Elements - Statistics
     const statsTotalTasksEl = document.getElementById('stats-total-tasks');
@@ -83,6 +91,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // State
     let tasks = [];
+    let categories = [
+        { id: 'work', name: 'Pekerjaan', color: '#4361ee', isDefault: true, icon: 'briefcase' },
+        { id: 'personal', name: 'Pribadi', color: '#fbbf24', isDefault: true, icon: 'user' },
+        { id: 'shopping', name: 'Belanja', color: '#4ade80', isDefault: true, icon: 'shopping-bag' },
+        { id: 'health', name: 'Kesehatan', color: '#f87171', isDefault: true, icon: 'heart' }
+    ];
     let currentTaskId = null;
     let isEditMode = false;
     let showCompletedTasks = true;
@@ -125,12 +139,28 @@ document.addEventListener('DOMContentLoaded', function() {
         renderCalendar();
     }
     
+    // Load categories from localStorage
+    function loadCategories() {
+        const storedCategories = localStorage.getItem('categories');
+        if (storedCategories) {
+            categories = JSON.parse(storedCategories);
+        }
+        renderCategories();
+        updateCategoryFilters();
+    }
+    
     // Save tasks to localStorage
     function saveTasks() {
         localStorage.setItem('tasks', JSON.stringify(tasks));
         renderAllTaskViews();
         updateStats();
         renderCalendar();
+    }
+    
+    // Save categories to localStorage
+    function saveCategories() {
+        localStorage.setItem('categories', JSON.stringify(categories));
+        renderCategories();
     }
     
     // Generate a unique ID
@@ -155,8 +185,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (filter === 'high' || filter === 'medium' || filter === 'low') {
                 return task.priority === filter && matchesSearch;
             }
-            if (filter === 'work' || filter === 'personal' || 
-                filter === 'shopping' || filter === 'health') {
+            
+            // Category filters - check if any of our categories match
+            const matchingCategory = categories.find(cat => cat.id === filter);
+            if (matchingCategory) {
                 return task.category === filter && matchesSearch;
             }
             
@@ -214,6 +246,293 @@ document.addEventListener('DOMContentLoaded', function() {
             if (currentPage < totalPages) {
                 currentPage++;
                 renderFunction();
+            }
+        });
+    }
+    
+    // Render kategori di sidebar
+    function renderCategories() {
+        categoryListContainer.innerHTML = '';
+        
+        categories.forEach(category => {
+            const categoryEl = document.createElement('div');
+            categoryEl.className = 'category';
+            categoryEl.dataset.category = category.id;
+            
+            categoryEl.innerHTML = `
+                <div class="category-left">
+                    <div class="category-icon" style="background-color: ${category.color}">
+                        <i class="fas fa-${category.icon || getCategoryIcon(category.id)}"></i>
+                    </div>
+                    <span>${category.name}</span>
+                </div>
+                <div class="category-count" id="${category.id}-count">0</div>
+            `;
+            
+            categoryEl.addEventListener('click', () => {
+                currentFilter = category.id;
+                currentPage = 1; // Reset to page 1 when filter changes
+                changeSection('dashboard');
+                renderDashboardTasks();
+                showNotification('Filter Kategori', `Menampilkan kategori: ${category.name}`, 'info');
+            });
+            
+            categoryListContainer.appendChild(categoryEl);
+        });
+        
+        // Update task category dropdown
+        updateCategoryDropdown();
+        updateCategoryStats();
+    }
+    
+    // Update kategori dropdown di form tugas
+    function updateCategoryDropdown() {
+        if (!taskCategorySelect) return;
+        
+        taskCategorySelect.innerHTML = '';
+        
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            taskCategorySelect.appendChild(option);
+        });
+    }
+    
+    // Update filter dropdown dengan kategori
+    function updateCategoryFilters() {
+        const filterMenus = [filterMenu, allTasksFilterMenu];
+        
+        filterMenus.forEach(menu => {
+            if (!menu) return;
+            
+            // Hapus filter kategori yang ada
+            const existingCategoryFilters = menu.querySelectorAll('.filter-option[data-filter-type="category"]');
+            existingCategoryFilters.forEach(filter => filter.remove());
+            
+            // Tambahkan filter kategori baru
+            categories.forEach(category => {
+                const filterOption = document.createElement('div');
+                filterOption.className = 'filter-option';
+                filterOption.dataset.filter = category.id;
+                filterOption.dataset.filterType = 'category';
+                filterOption.innerHTML = `Kategori: ${category.name}`;
+                
+                filterOption.addEventListener('click', e => {
+                    // Get parent menu
+                    const menu = e.target.closest('.filter-menu');
+                    currentFilter = e.target.dataset.filter;
+                    
+                    // Reset to page 1 when filter changes
+                    currentPage = 1;
+                    
+                    // Update active class
+                    menu.querySelectorAll('.filter-option').forEach(opt => {
+                        if (opt.dataset.filter === currentFilter) {
+                            opt.classList.add('active');
+                        } else {
+                            opt.classList.remove('active');
+                        }
+                    });
+                    
+                    // Hide menu
+                    menu.classList.remove('show');
+                    
+                    // Render tasks
+                    renderAllTaskViews();
+                    
+                    showNotification('Filter Diterapkan', `Menampilkan: Kategori: ${category.name}`, 'info');
+                });
+                
+                // Tambahkan ke menu filter
+                menu.appendChild(filterOption);
+            });
+        });
+    }
+    
+    // Render kategori dalam modal pengelolaan
+    function renderCategoriesInModal() {
+        categoriesList.innerHTML = '';
+        
+        categories.forEach(category => {
+            const categoryItem = document.createElement('div');
+            categoryItem.className = 'category-item';
+            if (category.isDefault) {
+                categoryItem.classList.add('default-category');
+            }
+            
+            categoryItem.innerHTML = `
+                <div class="category-item-left">
+                    <div class="category-color" style="background-color: ${category.color}"></div>
+                    <span>${category.name}</span>
+                    ${category.isDefault ? '<span class="category-badge">Default</span>' : ''}
+                </div>
+                ${!category.isDefault ? `
+                    <button class="category-delete-btn" data-id="${category.id}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                ` : ''}
+            `;
+            
+            categoriesList.appendChild(categoryItem);
+        });
+        
+        // Add event listeners for delete buttons
+        document.querySelectorAll('.category-delete-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const categoryId = e.currentTarget.dataset.id;
+                deleteCategory(categoryId);
+            });
+        });
+    }
+    
+    // Get icon for category
+    function getCategoryIcon(categoryId) {
+        const icons = {
+            work: 'briefcase',
+            personal: 'user',
+            shopping: 'shopping-bag',
+            health: 'heart'
+        };
+        
+        return icons[categoryId] || 'tag';
+    }
+    
+    // Get color for category
+    function getCategoryColor(categoryId) {
+        const category = categories.find(cat => cat.id === categoryId);
+        return category ? category.color : '#cccccc';
+    }
+    
+    // Get name for category
+    function getCategoryName(categoryId) {
+        const category = categories.find(cat => cat.id === categoryId);
+        return category ? category.name : 'Tidak diketahui';
+    }
+    
+    // Add new category
+    function addCategory() {
+        const name = newCategoryNameInput.value.trim();
+        const color = newCategoryColorInput.value;
+        
+        if (!name) {
+            showNotification('Error', 'Nama kategori tidak boleh kosong', 'error');
+            return;
+        }
+        
+        // Generate unique ID based on name (slug)
+        const id = name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now().toString().slice(-4);
+        
+        // Check if ID already exists
+        if (categories.some(cat => cat.id === id)) {
+            showNotification('Error', 'Kategori dengan nama yang sama sudah ada', 'error');
+            return;
+        }
+        
+        // Add new category
+        categories.push({
+            id,
+            name,
+            color,
+            isDefault: false,
+            icon: 'tag'
+        });
+        
+        // Clear input
+        newCategoryNameInput.value = '';
+        
+        // Re-render categories in modal
+        renderCategoriesInModal();
+        
+        showNotification('Sukses', 'Kategori baru ditambahkan', 'success');
+    }
+    
+    // Delete category
+    function deleteCategory(categoryId) {
+        // Check if category is used by any tasks
+        const tasksWithCategory = tasks.filter(task => task.category === categoryId);
+        
+        if (tasksWithCategory.length > 0) {
+            const confirmModal = document.createElement('div');
+            confirmModal.className = 'modal';
+            confirmModal.style.display = 'flex';
+            
+            const modalContent = document.createElement('div');
+            modalContent.className = 'modal-content';
+            modalContent.style.maxWidth = '450px';
+            
+            const categoryName = categories.find(cat => cat.id === categoryId).name;
+            
+            modalContent.innerHTML = `
+                <div class="modal-body">
+                    <div style="text-align: center; margin: 20px 0;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: var(--warning-color); margin-bottom: 15px;"></i>
+                        <h3 style="margin-bottom: 15px; font-size: 18px;">Perhatian: Kategori Sedang Digunakan</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 15px;">
+                            Kategori "${categoryName}" digunakan oleh ${tasksWithCategory.length} tugas.
+                            Jika Anda menghapus kategori ini, semua tugas tersebut juga akan dihapus.
+                        </p>
+                        <p style="color: var(--text-secondary);">Apakah Anda yakin ingin melanjutkan?</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-cancel" id="cancelDeleteCategoryBtn">Batal</button>
+                    <button class="btn" id="confirmDeleteCategoryBtn" style="background-color: var(--danger-color); color: white; border: none;">Hapus Kategori & Tugas</button>
+                </div>
+            `;
+            
+            confirmModal.appendChild(modalContent);
+            document.body.appendChild(confirmModal);
+            
+            const cancelDeleteCategoryBtn = document.getElementById('cancelDeleteCategoryBtn');
+            const confirmDeleteCategoryBtn = document.getElementById('confirmDeleteCategoryBtn');
+            
+            // Function to close the modal
+            const closeConfirmModal = () => {
+                document.body.removeChild(confirmModal);
+            };
+            
+            cancelDeleteCategoryBtn.addEventListener('click', closeConfirmModal);
+            
+            confirmDeleteCategoryBtn.addEventListener('click', () => {
+                // Hapus tugas dengan kategori ini
+                tasks = tasks.filter(task => task.category !== categoryId);
+                
+                // Hapus kategori
+                categories = categories.filter(category => category.id !== categoryId);
+                
+                // Simpan tugas
+                saveTasks();
+                
+                // Re-render kategori dalam modal
+                renderCategoriesInModal();
+                
+                closeConfirmModal();
+                showNotification('Sukses', 'Kategori dan tugas terkait berhasil dihapus', 'success');
+            });
+            
+            // Close modal when clicking outside
+            confirmModal.addEventListener('click', (e) => {
+                if (e.target === confirmModal) {
+                    closeConfirmModal();
+                }
+            });
+        } else {
+            // No tasks using this category, delete directly
+            categories = categories.filter(category => category.id !== categoryId);
+            renderCategoriesInModal();
+            showNotification('Sukses', 'Kategori berhasil dihapus', 'success');
+        }
+    }
+    
+    // Update category statistics
+    function updateCategoryStats() {
+        // Update category counts in sidebar
+        categories.forEach(category => {
+            const countEl = document.getElementById(`${category.id}-count`);
+            if (countEl) {
+                const count = tasks.filter(task => task.category === category.id).length;
+                countEl.textContent = count;
             }
         });
     }
@@ -466,33 +785,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const taskMeta = document.createElement('div');
         taskMeta.className = 'task-meta';
         
-        // Category
-        const categoryColors = {
-            work: 'var(--primary-color)',
-            personal: 'var(--warning-color)',
-            shopping: 'var(--success-color)',
-            health: 'var(--danger-color)'
-        };
+        // Find the category
+        const taskCategory = categories.find(cat => cat.id === task.category) ||
+                          { id: 'unknown', name: 'Tidak diketahui', color: '#cccccc' };
         
-        const categoryLabels = {
-            work: 'Pekerjaan',
-            personal: 'Pribadi',
-            shopping: 'Belanja',
-            health: 'Kesehatan'
-        };
-        
-        const taskCategory = document.createElement('div');
-        taskCategory.className = 'task-category';
+        const taskCategoryEl = document.createElement('div');
+        taskCategoryEl.className = 'task-category';
         
         const categoryDot = document.createElement('div');
         categoryDot.className = 'category-dot';
-        categoryDot.style.backgroundColor = categoryColors[task.category];
+        categoryDot.style.backgroundColor = taskCategory.color;
         
         const categoryText = document.createElement('span');
-        categoryText.textContent = categoryLabels[task.category];
+        categoryText.textContent = taskCategory.name;
         
-        taskCategory.appendChild(categoryDot);
-        taskCategory.appendChild(categoryText);
+        taskCategoryEl.appendChild(categoryDot);
+        taskCategoryEl.appendChild(categoryText);
         
         // Task date
         const taskDate = document.createElement('div');
@@ -535,7 +843,7 @@ document.addEventListener('DOMContentLoaded', function() {
         taskPriority.textContent = priorityLabels[task.priority];
         
         // Add meta elements
-        taskMeta.appendChild(taskCategory);
+        taskMeta.appendChild(taskCategoryEl);
         taskMeta.appendChild(taskDate); // Added date display
         taskMeta.appendChild(taskDue);
         taskMeta.appendChild(taskPriority);
@@ -584,6 +892,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const task = tasks.find(task => task.id === id);
         if (!task) return;
         
+        // Find the category
+        const taskCategory = categories.find(cat => cat.id === task.category) ||
+                          { id: 'unknown', name: 'Tidak diketahui', color: '#cccccc' };
+        
         // Create a task details modal
         const detailsModal = document.createElement('div');
         detailsModal.className = 'modal';
@@ -594,13 +906,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Format date for display
         const formattedDate = formatDateDisplay(task.date);
-        
-        const categoryLabels = {
-            work: 'Pekerjaan',
-            personal: 'Pribadi',
-            shopping: 'Belanja',
-            health: 'Kesehatan'
-        };
         
         const priorityLabels = {
             high: 'Tinggi',
@@ -625,8 +930,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div>
                         <h3 style="margin-bottom: 8px; font-size: 16px;">Kategori</h3>
                         <p style="padding: 8px 15px; background-color: var(--light-bg); border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
-                            <span class="category-dot" style="background-color: ${getCategoryColor(task.category)}"></span>
-                            ${categoryLabels[task.category]}
+                            <span class="category-dot" style="background-color: ${taskCategory.color}"></span>
+                            ${taskCategory.name}
                         </p>
                     </div>
                     <div>
@@ -696,17 +1001,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Helper function to get category color
-    function getCategoryColor(category) {
-        const categoryColors = {
-            work: 'var(--primary-color)',
-            personal: 'var(--warning-color)',
-            shopping: 'var(--success-color)',
-            health: 'var(--danger-color)'
-        };
-        return categoryColors[category] || 'var(--text-secondary)';
-    }
-    
     // Format date for display (DD Bulan YYYY)
     function formatDateDisplay(dateString) {
         if (!dateString) return '';
@@ -729,6 +1023,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!title) {
             showNotification('Error', 'Judul tugas tidak boleh kosong', 'error');
+            return;
+        }
+        
+        // Validate that category still exists
+        if (!categories.some(cat => cat.id === category)) {
+            showNotification('Error', 'Kategori tidak valid, silakan pilih kategori lain', 'error');
             return;
         }
         
@@ -778,7 +1078,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Fill the form with task data
         taskTitleInput.value = task.title;
         taskDescriptionInput.value = task.description || '';
-        taskCategorySelect.value = task.category;
+        
+        // Check if the category still exists, if not, select first available category
+        if (categories.some(cat => cat.id === task.category)) {
+            taskCategorySelect.value = task.category;
+        } else {
+            taskCategorySelect.value = categories[0].id;
+        }
+        
         taskPrioritySelect.value = task.priority;
         taskDateInput.value = task.date;
         taskTimeInput.value = task.time;
@@ -801,6 +1108,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!title) {
             showNotification('Error', 'Judul tugas tidak boleh kosong', 'error');
+            return;
+        }
+        
+        // Validate that category still exists
+        if (!categories.some(cat => cat.id === category)) {
+            showNotification('Error', 'Kategori tidak valid, silakan pilih kategori lain', 'error');
             return;
         }
         
@@ -840,7 +1153,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const task = tasks.find(task => task.id === id);
         
         modalContent.innerHTML = `
-
             <div class="modal-body">
                 <div style="text-align: center; margin: 20px 0;">
                     <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: var(--danger-color); margin-bottom: 15px;"></i>
@@ -858,7 +1170,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.appendChild(confirmModal);
         
         // Event handler untuk tombol-tombol
-
         const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         
@@ -867,7 +1178,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.removeChild(confirmModal);
         };
         
-
         cancelDeleteBtn.addEventListener('click', closeConfirmModal);
         
         // Konfirmasi hapus
@@ -929,62 +1239,71 @@ document.addEventListener('DOMContentLoaded', function() {
         activeCountEl.textContent = activeTasks;
         completedCountEl.textContent = completedTasks;
         
-        // Update category counts
-        const categoryCounts = {
-            work: tasks.filter(task => task.category === 'work').length,
-            personal: tasks.filter(task => task.category === 'personal').length,
-            shopping: tasks.filter(task => task.category === 'shopping').length,
-            health: tasks.filter(task => task.category === 'health').length
-        };
-        
-        workCountEl.textContent = categoryCounts.work;
-        personalCountEl.textContent = categoryCounts.personal;
-        shoppingCountEl.textContent = categoryCounts.shopping;
-        healthCountEl.textContent = categoryCounts.health;
+        // Update category counts and charts
+        updateCategoryStats();
+        updateCategoryChart();
+        updatePriorityChart();
         
         // Update statistics section
         statsTotalTasksEl.textContent = totalTasks;
         statsCompletedTasksEl.textContent = completedTasks;
         statsActiveTasksEl.textContent = activeTasks;
-        
-        // Update charts
-        updateCategoryChart();
-        updatePriorityChart();
     }
     
     // Update category chart
     function updateCategoryChart() {
-        const categoryCounts = {
-            work: tasks.filter(task => task.category === 'work').length,
-            personal: tasks.filter(task => task.category === 'personal').length,
-            shopping: tasks.filter(task => task.category === 'shopping').length,
-            health: tasks.filter(task => task.category === 'health').length
-        };
-        
         // Clear chart
         categoryChartEl.innerHTML = '';
         
+        // Skip if there are no tasks or categories
+        if (tasks.length === 0 || categories.length === 0) {
+            categoryChartEl.innerHTML = `<div class="empty-chart">Tidak ada data</div>`;
+            return;
+        }
+        
+        // Count tasks for each category
+        const categoryCounts = {};
+        categories.forEach(category => {
+            categoryCounts[category.id] = tasks.filter(task => task.category === category.id).length;
+        });
+        
         // Calculate max height
         const maxCount = Math.max(...Object.values(categoryCounts), 1);
-        const categories = ['work', 'personal', 'shopping', 'health'];
         
         // Create chart bars
-        categories.forEach((category, index) => {
-            const count = categoryCounts[category];
+        const visibleCategories = categories.filter(cat => categoryCounts[cat.id] > 0);
+        
+        visibleCategories.forEach((category, index) => {
+            const count = categoryCounts[category.id];
             const height = count ? (count / maxCount) * 180 : 0; // 180px max height
             
             const bar = document.createElement('div');
-            bar.className = `chart-bar ${category}`;
+            bar.className = 'chart-bar';
             bar.style.height = `${height}px`;
-            bar.style.left = `${index * 25 + 10}%`;
+            bar.style.left = `${index * (100 / (visibleCategories.length)) + (100 / (visibleCategories.length * 2))}%`;
+            bar.style.backgroundColor = category.color;
             
             const label = document.createElement('div');
             label.className = 'chart-label';
             label.textContent = count;
-            label.style.left = `${index * 25 + 10}%`;
+            label.style.left = `${index * (100 / (visibleCategories.length)) + (100 / (visibleCategories.length * 2))}%`;
             
             categoryChartEl.appendChild(bar);
             categoryChartEl.appendChild(label);
+        });
+        
+        // Update legend
+        const statsLegend = categoryChartEl.closest('.stats-card').querySelector('.stats-legend');
+        statsLegend.innerHTML = '';
+        
+        visibleCategories.forEach(category => {
+            const legendItem = document.createElement('div');
+            legendItem.className = 'legend-item';
+            legendItem.innerHTML = `
+                <div class="legend-color" style="background-color: ${category.color}"></div>
+                <span>${category.name}</span>
+            `;
+            statsLegend.appendChild(legendItem);
         });
     }
     
@@ -998,6 +1317,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Clear chart
         priorityChartEl.innerHTML = '';
+        
+        // Skip if there are no tasks
+        if (tasks.length === 0) {
+            priorityChartEl.innerHTML = `<div class="empty-chart">Tidak ada data</div>`;
+            return;
+        }
         
         // Calculate max height
         const maxCount = Math.max(...Object.values(priorityCounts), 1);
@@ -1120,7 +1445,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return [year, month, day].join('-');
     }
-    
+
     // Show notification
     function showNotification(title, message, type = 'info') {
         notificationTitle.textContent = title;
@@ -1134,21 +1459,21 @@ document.addEventListener('DOMContentLoaded', function() {
             notification.classList.remove('show');
         }, 3000);
     }
-    
+
     // Modal functions
     function openModal() {
         modal.style.display = 'flex';
     }
-    
+
     function closeModal() {
         modal.style.display = 'none';
         resetForm();
     }
-    
+
     function resetForm() {
         taskTitleInput.value = '';
         taskDescriptionInput.value = '';
-        taskCategorySelect.value = 'work';
+        taskCategorySelect.value = categories.length > 0 ? categories[0].id : '';
         taskPrioritySelect.value = 'medium';
         taskDateInput.value = formattedToday;
         
@@ -1160,7 +1485,7 @@ document.addEventListener('DOMContentLoaded', function() {
         isEditMode = false;
         modalTitle.textContent = 'Tambah Tugas Baru';
     }
-    
+
     // Change current section
     function changeSection(section) {
         currentSection = section;
@@ -1186,25 +1511,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     // ===== Event Listeners =====
-    
+
     // Navigation
     menuItems.forEach(item => {
         item.addEventListener('click', () => {
             changeSection(item.dataset.section);
         });
     });
-    
+
     // Filter dropdown toggle
     filterBtn.addEventListener('click', () => {
         filterMenu.classList.toggle('show');
     });
-    
+
     allTasksFilterBtn.addEventListener('click', () => {
         allTasksFilterMenu.classList.toggle('show');
     });
-    
+
     // Filter options
     document.querySelectorAll('.filter-option').forEach(option => {
         option.addEventListener('click', e => {
@@ -1244,22 +1569,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 health: 'Kategori: Kesehatan'
             };
             
-            showNotification('Filter Diterapkan', `Menampilkan: ${filterLabels[currentFilter]}`, 'info');
+            // Get category name if it's a category filter
+            const category = categories.find(cat => cat.id === currentFilter);
+            const filterLabel = category ? `Kategori: ${category.name}` : filterLabels[currentFilter] || 'Filter Kustom';
+            
+            showNotification('Filter Diterapkan', `Menampilkan: ${filterLabel}`, 'info');
         });
     });
-    
+
     // Search
     searchInput.addEventListener('input', e => {
         searchQuery = e.target.value.trim();
         currentPage = 1; // Reset to page 1 when search changes
         renderDashboardTasks();
     });
-    
+
     allTasksSearchInput.addEventListener('input', e => {
         currentPage = 1; // Reset to page 1 when search changes
         renderAllTasks();
     });
-    
+
     // Toggle completed tasks
     toggleCompletedBtn.addEventListener('click', () => {
         showCompletedTasks = !showCompletedTasks;
@@ -1269,43 +1598,43 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('.completed-section').style.display = 
             showCompletedTasks ? 'block' : 'none';
     });
-    
+
     // Calendar navigation
     prevMonthBtn.addEventListener('click', () => {
         currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
         renderCalendar();
     });
-    
+
     nextMonthBtn.addEventListener('click', () => {
         currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
         renderCalendar();
     });
-    
+
     // Modal events
     openModalBtn.addEventListener('click', () => {
         resetForm();
         openModal();
     });
-    
+
     openModalBtnCalendar.addEventListener('click', () => {
         resetForm();
         taskDateInput.value = formatDateForStorage(selectedDate);
         openModal();
     });
-    
+
     openModalBtnAll.addEventListener('click', () => {
         resetForm();
         openModal();
     });
-    
+
     openModalBtnPriority.addEventListener('click', () => {
         resetForm();
         openModal();
     });
-    
+
     closeModalBtn.addEventListener('click', closeModal);
     cancelModalBtn.addEventListener('click', closeModal);
-    
+
     saveTaskBtn.addEventListener('click', () => {
         if (isEditMode) {
             updateTask();
@@ -1313,14 +1642,51 @@ document.addEventListener('DOMContentLoaded', function() {
             addTask();
         }
     });
-    
+
+    // Category management events
+    if (manageCategoriesBtn) {
+        manageCategoriesBtn.addEventListener('click', () => {
+            renderCategoriesInModal();
+            categoriesModal.style.display = 'flex';
+        });
+    }
+
+    if (closeCategoriesModalBtn) {
+        closeCategoriesModalBtn.addEventListener('click', () => {
+            categoriesModal.style.display = 'none';
+        });
+    }
+
+    if (newCategoryColorInput && colorPreview) {
+        newCategoryColorInput.addEventListener('input', (e) => {
+            colorPreview.style.backgroundColor = e.target.value;
+        });
+    }
+
+    if (addCategoryBtn) {
+        addCategoryBtn.addEventListener('click', addCategory);
+    }
+
+    if (saveCategoriesBtn) {
+        saveCategoriesBtn.addEventListener('click', () => {
+            saveCategories();
+            updateCategoryFilters();
+            categoriesModal.style.display = 'none';
+            showNotification('Sukses', 'Perubahan kategori berhasil disimpan', 'success');
+        });
+    }
+
     // Close modal when clicking outside
     window.addEventListener('click', e => {
         if (e.target === modal) {
             closeModal();
         }
+        
+        if (e.target === categoriesModal) {
+            categoriesModal.style.display = 'none';
+        }
     });
-    
+
     // Close filter menus when clicking outside
     window.addEventListener('click', e => {
         if (!e.target.closest('.filter-dropdown')) {
@@ -1328,130 +1694,8 @@ document.addEventListener('DOMContentLoaded', function() {
             allTasksFilterMenu.classList.remove('show');
         }
     });
-    
-    // Category filters
-    document.querySelectorAll('.category').forEach(category => {
-        category.addEventListener('click', () => {
-            currentFilter = category.dataset.category;
-            currentPage = 1; // Reset to page 1 when filter changes
-            changeSection('dashboard');
-            renderDashboardTasks();
-            showNotification('Filter Kategori', `Menampilkan kategori: ${category.querySelector('span').textContent}`, 'info');
-        });
-    });
-    
+
     // Initial load
     loadTasks();
-});
-
-// Fungsi untuk memeriksa deadline tugas
-function checkTaskDeadlines() {
-    if (!("Notification" in window)) {
-        return; // Browser tidak mendukung notifikasi
-    }
-    
-    if (Notification.permission !== 'granted') {
-        return; // Belum mendapat izin notifikasi
-    }
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    // Ambil tugas yang belum selesai
-    const activeTasks = tasks.filter(task => !task.completed);
-    
-    activeTasks.forEach(task => {
-        if (!task.date) return;
-        
-        const taskDate = new Date(task.date);
-        taskDate.setHours(0, 0, 0, 0);
-        
-        // Cek apakah tugas sudah dinotifikasi hari ini
-        const notifiedTasks = JSON.parse(localStorage.getItem('notifiedTasks') || '{}');
-        const notificationKey = `${task.id}-${today.toDateString()}`;
-        
-        if (notifiedTasks[notificationKey]) {
-            return; // Sudah dinotifikasi hari ini
-        }
-        
-        // Deadline hari ini
-        if (taskDate.getTime() === today.getTime()) {
-            showTaskNotification(
-                'Deadline Hari Ini!', 
-                `"${task.title}" jatuh tempo hari ini pada pukul ${task.time}`, 
-                task.id
-            );
-            
-            // Catat bahwa tugas telah dinotifikasi
-            notifiedTasks[notificationKey] = true;
-            localStorage.setItem('notifiedTasks', JSON.stringify(notifiedTasks));
-        }
-        
-        // Deadline besok
-        else if (taskDate.getTime() === tomorrow.getTime()) {
-            showTaskNotification(
-                'Deadline Besok!', 
-                `"${task.title}" akan jatuh tempo besok pada pukul ${task.time}`, 
-                task.id
-            );
-            
-            // Catat bahwa tugas telah dinotifikasi
-            notifiedTasks[notificationKey] = true;
-            localStorage.setItem('notifiedTasks', JSON.stringify(notifiedTasks));
-        }
-    });
-}
-
-// Fungsi untuk menampilkan notifikasi browser
-function showTaskNotification(title, body, taskId) {
-    if (Notification.permission === 'granted') {
-        const notification = new Notification(title, {
-            body: body,
-            icon: 'img/notification-icon.png' // Jika ada icon
-        });
-        
-        notification.onclick = function() {
-            // Buka aplikasi dan fokus ke tugas tersebut
-            window.focus();
-            viewTaskDetails(taskId);
-        };
-    }
-}
-
-// Minta izin notifikasi saat aplikasi dimuat
-function requestNotificationPermission() {
-    if (!("Notification" in window)) {
-        console.log("Browser ini tidak mendukung notifikasi desktop");
-        return;
-    }
-    
-    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-        Notification.requestPermission().then(permission => {
-            if (permission === 'granted') {
-                showNotification('Notifikasi Diaktifkan', 'Anda akan menerima notifikasi untuk tugas yang mendekati deadline', 'success');
-                
-                // Segera cek deadline setelah izin diberikan
-                checkTaskDeadlines();
-            }
-        });
-    }
-}
-
-// Panggil fungsi izin notifikasi saat aplikasi dimuat
-document.addEventListener('DOMContentLoaded', function() {
-    // (kode yang sudah ada)
-    
-    // Minta izin notifikasi
-    requestNotificationPermission();
-    
-    // Cek deadline saat load
-    checkTaskDeadlines();
-    
-    // Setup cek deadline otomatis (setiap jam)
-    setInterval(checkTaskDeadlines, 3600000);
-    
-    // (lanjutkan kode yang sudah ada)
+    loadCategories();
 });

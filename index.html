@@ -51,42 +51,46 @@
                 </div>
                 
                 <div class="task-categories">
-                    <div class="category-header">KATEGORI</div>
-                    <div class="category" data-category="work">
-                        <div class="category-left">
-                            <div class="category-icon work">
-                                <i class="fas fa-briefcase"></i>
-                            </div>
-                            <span>Pekerjaan</span>
-                        </div>
-                        <div class="category-count" id="work-count">0</div>
+                    <div class="category-header">
+                        KATEGORI
+                        <!-- <button id="manage-categories-btn" class="manage-btn" title="Kelola Kategori">
+                            <i class="fas fa-cog"></i>
+                        </button> -->
                     </div>
-                    <div class="category" data-category="personal">
-                        <div class="category-left">
-                            <div class="category-icon personal">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <span>Pribadi</span>
-                        </div>
-                        <div class="category-count" id="personal-count">0</div>
+                    <div id="category-list">
+                        <!-- Kategori akan dirender secara dinamis dari JavaScript -->
                     </div>
-                    <div class="category" data-category="shopping">
-                        <div class="category-left">
-                            <div class="category-icon shopping">
-                                <i class="fas fa-shopping-bag"></i>
-                            </div>
-                            <span>Belanja</span>
+                </div>
+                <!-- Manage Categories Modal -->
+                <div id="categoriesModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div class="modal-title">Kelola Kategori</div>
+                            <button class="close-btn" id="closeCategoriesModalBtn">&times;</button>
                         </div>
-                        <div class="category-count" id="shopping-count">0</div>
-                    </div>
-                    <div class="category" data-category="health">
-                        <div class="category-left">
-                            <div class="category-icon health">
-                                <i class="fas fa-heart"></i>
+                        <div class="modal-body">
+                            <div class="categories-container">
+                                <div id="categories-list">
+                                    <!-- Kategori akan dirender secara dinamis -->
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="newCategoryName">Tambah Kategori Baru</label>
+                                    <div class="add-category-input">
+                                        <input type="text" id="newCategoryName" class="form-input" placeholder="Nama kategori">
+                                        <div class="color-picker">
+                                            <input type="color" id="newCategoryColor" value="#4361ee">
+                                            <label for="newCategoryColor" class="color-preview"></label>
+                                        </div>
+                                        <button id="addCategoryBtn" class="btn btn-primary">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <span>Kesehatan</span>
                         </div>
-                        <div class="category-count" id="health-count">0</div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" id="saveCategoriesBtn">Simpan Perubahan</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -123,6 +127,9 @@
                         <button class="add-task-btn" id="openModalBtn">
                             <i class="fas fa-plus"></i>
                             <span>Tambah Tugas</span>
+                        </button>
+                        <button id="manage-categories-btn" class="add-kategory-btn" title="Kelola Kategori">
+                            <i class="fas fa-plus"></i> Kategori
                         </button>
                     </div>
                 </div>
@@ -169,14 +176,14 @@
                             <span id="active-count">0</span> Tugas Aktif
                         </div>
                         <div class="section-actions">
-                            <button class="view-btn" id="list-view-btn">
+                            <!-- <button class="view-btn" id="list-view-btn">
                                 <i class="fas fa-list"></i>
                                 <span>Tampilan List</span>
                             </button>
                             <button class="view-btn" id="day-view-btn">
                                 <i class="fas fa-calendar-day"></i>
                                 <span>Tampilan Hari</span>
-                            </button>
+                            </button> -->
                         </div>
                     </div>
                     
