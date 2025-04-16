@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mixulist</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-check-circle"></i>
+                <span>MixuList</span>
+            </div>
+            <div class="user-profile">
+                <!-- <div class="user-avatar">AR</div> -->
+                <div class="user-info">
+                    <!-- <h3>Ahmad Rizky</h3> -->
+                    <p>By. Lazuardi Mandegar</p>
+                </div>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="menu">
+                    <div class="menu-item active" data-section="dashboard">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </div>
+                    <div class="menu-item" data-section="calendar">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Kalender</span>
+                    </div>
+                    <div class="menu-item" data-section="all-tasks">
+                        <i class="fas fa-list-check"></i>
+                        <span>Semua Tugas</span>
+                    </div>
+                    <div class="menu-item" data-section="priority">
+                        <i class="fas fa-star"></i>
+                        <span>Prioritas</span>
+                    </div>
+                    <div class="menu-item" data-section="statistics">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Statistik</span>
+                    </div>
+                </div>
+                
+                <div class="task-categories">
+                    <div class="category-header">KATEGORI</div>
+                    <div class="category" data-category="work">
+                        <div class="category-left">
+                            <div class="category-icon work">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <span>Pekerjaan</span>
+                        </div>
+                        <div class="category-count" id="work-count">0</div>
+                    </div>
+                    <div class="category" data-category="personal">
+                        <div class="category-left">
+                            <div class="category-icon personal">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span>Pribadi</span>
+                        </div>
+                        <div class="category-count" id="personal-count">0</div>
+                    </div>
+                    <div class="category" data-category="shopping">
+                        <div class="category-left">
+                            <div class="category-icon shopping">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                            <span>Belanja</span>
+                        </div>
+                        <div class="category-count" id="shopping-count">0</div>
+                    </div>
+                    <div class="category" data-category="health">
+                        <div class="category-left">
+                            <div class="category-icon health">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <span>Kesehatan</span>
+                        </div>
+                        <div class="category-count" id="health-count">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dashboard Section -->
+            <div class="tasks-area page-section active" id="dashboard-section">
+                <div class="tasks-header">
+                    <div class="tasks-title">
+                        <h2>Tugas Hari Ini</h2>
+                        <p id="current-date">Rabu, 16 April 2025</p>
+                    </div>
+                    <div class="tasks-actions">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="search-input" placeholder="Cari tugas...">
+                        </div>
+                        <div class="filter-dropdown">
+                            <button class="filter-btn" id="filter-btn">
+                                <i class="fas fa-filter"></i>
+                                <span>Filter</span>
+                            </button>
+                            <div class="filter-menu" id="filter-menu">
+                                <div class="filter-option active" data-filter="all">Semua Tugas</div>
+                                <div class="filter-option" data-filter="today">Hari Ini</div>
+                                <div class="filter-option" data-filter="high">Prioritas Tinggi</div>
+                                <div class="filter-option" data-filter="medium">Prioritas Sedang</div>
+                                <div class="filter-option" data-filter="low">Prioritas Rendah</div>
+                                <div class="filter-option" data-filter="work">Kategori: Pekerjaan</div>
+                                <div class="filter-option" data-filter="personal">Kategori: Pribadi</div>
+                                <div class="filter-option" data-filter="shopping">Kategori: Belanja</div>
+                                <div class="filter-option" data-filter="health">Kategori: Kesehatan</div>
+                            </div>
+                        </div>
+                        <button class="add-task-btn" id="openModalBtn">
+                            <i class="fas fa-plus"></i>
+                            <span>Tambah Tugas</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="progress-section">
+                    <div class="progress-card">
+                        <div class="progress-title">Penyelesaian Hari Ini</div>
+                        <div class="progress-value" id="today-progress">0%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill blue" id="today-progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-details">
+                            <span id="today-completed">0 dari 0 tugas</span>
+                            <span id="today-remaining">0 tersisa</span>
+                        </div>
+                    </div>
+                    <div class="progress-card">
+                        <div class="progress-title">Tugas Prioritas</div>
+                        <div class="progress-value" id="priority-progress">0%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill yellow" id="priority-progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-details">
+                            <span id="priority-completed">0 dari 0 tugas</span>
+                            <span id="priority-remaining">0 tersisa</span>
+                        </div>
+                    </div>
+                    <div class="progress-card">
+                        <div class="progress-title">Penyelesaian Total</div>
+                        <div class="progress-value" id="total-progress">0%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill green" id="total-progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-details">
+                            <span id="total-completed">0 dari 0 tugas</span>
+                            <span id="total-remaining">0 tersisa</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tasks-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span id="active-count">0</span> Tugas Aktif
+                        </div>
+                        <div class="section-actions">
+                            <button class="view-btn" id="list-view-btn">
+                                <i class="fas fa-list"></i>
+                                <span>Tampilan List</span>
+                            </button>
+                            <button class="view-btn" id="day-view-btn">
+                                <i class="fas fa-calendar-day"></i>
+                                <span>Tampilan Hari</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="active-tasks" class="task-list">
+                        <!-- Active tasks will be inserted here -->
+                    </div>
+                </div>
+                
+                <div class="tasks-section completed-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span id="completed-count">0</span> Tugas Selesai
+                        </div>
+                        <div class="section-actions">
+                            <button class="view-btn" id="toggle-completed">
+                                <i class="fas fa-eye-slash"></i>
+                                <span>Sembunyikan</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="completed-tasks" class="task-list">
+                        <!-- Completed tasks will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Section -->
+            <div class="tasks-area page-section" id="calendar-section">
+                <div class="tasks-header">
+                    <div class="tasks-title">
+                        <h2>Kalender Tugas</h2>
+                        <p>Lihat semua tugas berdasarkan tanggal</p>
+                    </div>
+                    <div class="tasks-actions">
+                        <button class="add-task-btn" id="openModalBtnCalendar">
+                            <i class="fas fa-plus"></i>
+                            <span>Tambah Tugas</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <div class="calendar-title" id="calendar-month-year">April 2025</div>
+                        <div class="calendar-nav">
+                            <button class="calendar-nav-btn" id="prev-month-btn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="calendar-nav-btn" id="next-month-btn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="calendar-grid" id="calendar-weekdays">
+                        <div class="calendar-weekday">Min</div>
+                        <div class="calendar-weekday">Sen</div>
+                        <div class="calendar-weekday">Sel</div>
+                        <div class="calendar-weekday">Rab</div>
+                        <div class="calendar-weekday">Kam</div>
+                        <div class="calendar-weekday">Jum</div>
+                        <div class="calendar-weekday">Sab</div>
+                    </div>
+
+                    <div class="calendar-grid" id="calendar-days">
+                        <!-- Calendar days will be generated here -->
+                    </div>
+                </div>
+
+                <div class="tasks-section">
+                    <div class="section-header">
+                        <div class="section-title" id="selected-date-title">
+                            Tugas untuk Hari Ini
+                        </div>
+                    </div>
+                    
+                    <div id="calendar-tasks" class="task-list">
+                        <!-- Tasks for selected date will be shown here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Tasks Section -->
+            <div class="tasks-area page-section" id="all-tasks-section">
+                <div class="tasks-header">
+                    <div class="tasks-title">
+                        <h2>Semua Tugas</h2>
+                        <p>Daftar lengkap semua tugas Anda</p>
+                    </div>
+                    <div class="tasks-actions">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="all-tasks-search" placeholder="Cari tugas...">
+                        </div>
+                        <div class="filter-dropdown">
+                            <button class="filter-btn" id="all-tasks-filter-btn">
+                                <i class="fas fa-filter"></i>
+                                <span>Filter</span>
+                            </button>
+                            <div class="filter-menu" id="all-tasks-filter-menu">
+                                <div class="filter-option active" data-filter="all">Semua Tugas</div>
+                                <div class="filter-option" data-filter="today">Hari Ini</div>
+                                <div class="filter-option" data-filter="high">Prioritas Tinggi</div>
+                                <div class="filter-option" data-filter="medium">Prioritas Sedang</div>
+                                <div class="filter-option" data-filter="low">Prioritas Rendah</div>
+                                <div class="filter-option" data-filter="work">Kategori: Pekerjaan</div>
+                                <div class="filter-option" data-filter="personal">Kategori: Pribadi</div>
+                                <div class="filter-option" data-filter="shopping">Kategori: Belanja</div>
+                                <div class="filter-option" data-filter="health">Kategori: Kesehatan</div>
+                            </div>
+                        </div>
+                        <button class="add-task-btn" id="openModalBtnAll">
+                            <i class="fas fa-plus"></i>
+                            <span>Tambah Tugas</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tasks-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span id="all-tasks-count">0</span> Tugas
+                        </div>
+                    </div>
+                    
+                    <div id="all-tasks-list" class="task-list">
+                        <!-- All tasks will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Priority Section -->
+            <div class="tasks-area page-section" id="priority-section">
+                <div class="tasks-header">
+                    <div class="tasks-title">
+                        <h2>Tugas Berdasarkan Prioritas</h2>
+                        <p>Fokus pada tugas yang paling penting</p>
+                    </div>
+                    <div class="tasks-actions">
+                        <button class="add-task-btn" id="openModalBtnPriority">
+                            <i class="fas fa-plus"></i>
+                            <span>Tambah Tugas</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tasks-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span id="high-priority-count">0</span> Prioritas Tinggi
+                        </div>
+                    </div>
+                    
+                    <div id="high-priority-tasks" class="task-list">
+                        <!-- High priority tasks will be inserted here -->
+                    </div>
+                </div>
+                
+                <div class="tasks-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span id="medium-priority-count">0</span> Prioritas Sedang
+                        </div>
+                    </div>
+                    
+                    <div id="medium-priority-tasks" class="task-list">
+                        <!-- Medium priority tasks will be inserted here -->
+                    </div>
+                </div>
+                
+                <div class="tasks-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span id="low-priority-count">0</span> Prioritas Rendah
+                        </div>
+                    </div>
+                    
+                    <div id="low-priority-tasks" class="task-list">
+                        <!-- Low priority tasks will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Section -->
+            <div class="tasks-area page-section" id="statistics-section">
+                <div class="tasks-header">
+                    <div class="tasks-title">
+                        <h2>Statistik Tugas</h2>
+                        <p>Analisis kinerja dan produktivitas Anda</p>
+                    </div>
+                </div>
+                
+                <div class="stats-container">
+                    <div class="stats-card">
+                        <div class="stats-title">Tugas Berdasarkan Kategori</div>
+                        <div class="stats-chart" id="category-chart">
+                            <!-- Chart bars will be generated here -->
+                        </div>
+                        <div class="stats-legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: var(--primary-color)"></div>
+                                <span>Pekerjaan</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: var(--warning-color)"></div>
+                                <span>Pribadi</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: var(--success-color)"></div>
+                                <span>Belanja</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: var(--danger-color)"></div>
+                                <span>Kesehatan</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-card">
+                        <div class="stats-title">Tugas Berdasarkan Prioritas</div>
+                        <div class="stats-chart" id="priority-chart">
+                            <!-- Chart bars will be generated here -->
+                        </div>
+                        <div class="stats-legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: var(--danger-color)"></div>
+                                <span>Tinggi</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: var(--warning-color)"></div>
+                                <span>Sedang</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: var(--success-color)"></div>
+                                <span>Rendah</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tasks-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            Ringkasan Produktivitas
+                        </div>
+                    </div>
+                    
+                    <div class="progress-section">
+                        <div class="progress-card">
+                            <div class="progress-title">Total Tugas</div>
+                            <div class="progress-value" id="stats-total-tasks">0</div>
+                        </div>
+                        <div class="progress-card">
+                            <div class="progress-title">Tugas Selesai</div>
+                            <div class="progress-value" id="stats-completed-tasks">0</div>
+                        </div>
+                        <div class="progress-card">
+                            <div class="progress-title">Tugas Aktif</div>
+                            <div class="progress-value" id="stats-active-tasks">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav">
+        <div class="mobile-nav-items">
+            <div class="mobile-nav-item active" data-section="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="mobile-nav-item" data-section="calendar">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Kalender</span>
+            </div>
+            <div class="mobile-nav-item" data-section="all-tasks">
+                <i class="fas fa-list-check"></i>
+                <span>Tugas</span>
+            </div>
+            <div class="mobile-nav-item" data-section="priority">
+                <i class="fas fa-star"></i>
+                <span>Prioritas</span>
+            </div>
+            <div class="mobile-nav-item" data-section="statistics">
+                <i class="fas fa-chart-line"></i>
+                <span>Statistik</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Task Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">Tambah Tugas Baru</div>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="taskTitle">Judul Tugas</label>
+                    <input type="text" id="taskTitle" class="form-input" placeholder="Masukkan judul tugas">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="taskDescription">Deskripsi</label>
+                    <textarea id="taskDescription" class="form-textarea" placeholder="Masukkan deskripsi tugas (opsional)"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="taskCategory">Kategori</label>
+                        <select id="taskCategory" class="form-select">
+                            <option value="work">Pekerjaan</option>
+                            <option value="personal">Pribadi</option>
+                            <option value="shopping">Belanja</option>
+                            <option value="health">Kesehatan</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskPriority">Prioritas</label>
+                        <select id="taskPriority" class="form-select">
+                            <option value="high">Tinggi</option>
+                            <option value="medium">Sedang</option>
+                            <option value="low">Rendah</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="taskDate">Tanggal</label>
+                        <input type="date" id="taskDate" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskTime">Waktu</label>
+                        <input type="time" id="taskTime" class="form-input">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" id="cancelModalBtn">Batal</button>
+                <button class="btn btn-primary" id="saveTaskBtn">Simpan Tugas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div class="notification-title" id="notification-title"></div>
+        <div class="notification-message" id="notification-message"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
