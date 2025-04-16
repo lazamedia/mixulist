@@ -575,7 +575,8 @@ header {
     align-items: center;
     justify-content: center;
     height: auto;
-    padding: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
     overflow-y: scroll;
 }
 
