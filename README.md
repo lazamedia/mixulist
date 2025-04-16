@@ -23,5 +23,53 @@ MixuList adalah aplikasi Todo List modern dengan tampilan yang elegan dan intuit
 - Font Awesome untuk ikon
 - Local Storage API untuk penyimpanan data
 
+## Fitur Unggulan
+
+### Pagination
+Saat data tugas banyak, sistem pagination memungkinkan pengguna menjelajahi data dengan lebih nyaman tanpa perlu scroll yang terlalu panjang.
+
+### Konfirmasi Hapus Elegan
+Dilengkapi dengan modal konfirmasi saat menghapus tugas untuk mencegah penghapusan yang tidak disengaja.
+
+### Detail Tugas
+Tampilan detail tugas yang informatif dan mudah dibaca dengan modal yang elegan.
+
+### Mode Responsif
+Tampilan yang responsif dan adaptif pada berbagai perangkat, dari desktop hingga mobile.
+
+## Pengembangan Masa Depan
+
+Beberapa fitur yang direncanakan untuk versi mendatang:
+
+- Sinkronisasi Cloud untuk akses di berbagai perangkat
+- Notifikasi pengingat tugas
+- Tema gelap/terang
+- Mode offline
+- Ekspor/impor data tugas
+- Berbagi tugas dengan pengguna lain
+
+## Kontribusi
+
+Jika Anda ingin berkontribusi pada proyek ini, silakan ikuti langkah-langkah berikut:
+
+1. Fork repositori
+2. Buat branch fitur baru (`git checkout -b fitur-baru`)
+3. Commit perubahan Anda (`git commit -m 'Menambahkan fitur baru'`)
+4. Push ke branch (`git push origin fitur-baru`)
+5. Buat Pull Request
+
+## Lisensi
+
+Proyek ini dilisensikan di bawah Lisensi MIT - lihat file [LICENSE](LICENSE) untuk detail.
+
+## Kontak dan Dukungan
+
+Jika Anda memiliki pertanyaan atau masalah dengan aplikasi, silakan hubungi:
+- Email: lazamedia@gmail.com
+- GitHub Issues: [https://github.com/username/mixulist/issues](https://github.com/lazamedia/mixulist/issues)
+
+---
+
+Dibuat dengan ❤️ oleh Tim Mixucode &copy; 2025
 
    
