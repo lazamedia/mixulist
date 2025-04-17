@@ -1033,13 +1033,38 @@ header {
         width: 100%;
     }
     
+    /* Modifikasi task item untuk tampilan responsif */
     .task-item {
+        display: flex;
         flex-wrap: wrap;
+        padding: 16px 20px;
     }
     
-    .task-meta {
+    /* Buat baris pertama untuk checkbox dan content */
+    .task-checkbox {
+        margin-right: 15px;
         margin-top: 10px;
+        align-self: flex-start;
+    }
+    
+    .task-content {
+        flex: 1;
+        min-width: 0; /* Penting untuk flex wrapping */
+    }
+    
+    /* Task meta tetap rapi pada layar kecil */
+    .task-meta {
         flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    /* Tombol aksi di baris baru, lebar penuh */
+    .task-actions {
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border-color);
     }
     
     .calendar-grid {

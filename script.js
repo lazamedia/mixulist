@@ -843,9 +843,9 @@ document.addEventListener('DOMContentLoaded', function() {
         taskPriority.textContent = priorityLabels[task.priority];
         
         // Add meta elements
-        taskMeta.appendChild(taskCategoryEl);
-        taskMeta.appendChild(taskDate); // Added date display
-        taskMeta.appendChild(taskDue);
+        // taskMeta.appendChild(taskCategoryEl);
+        taskMeta.appendChild(taskDate); 
+        // taskMeta.appendChild(taskDue);
         taskMeta.appendChild(taskPriority);
         
         // Add elements to task content
