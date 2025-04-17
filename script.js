@@ -257,6 +257,12 @@ document.addEventListener('DOMContentLoaded', function() {
         categories.forEach(category => {
             const categoryEl = document.createElement('div');
             categoryEl.className = 'category';
+            
+            // Tambahkan kelas active jika kategori ini adalah filter saat ini
+            if (category.id === currentFilter) {
+                categoryEl.classList.add('active');
+            }
+            
             categoryEl.dataset.category = category.id;
             
             categoryEl.innerHTML = `
@@ -270,6 +276,14 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             
             categoryEl.addEventListener('click', () => {
+                // Hapus kelas active dari semua kategori
+                document.querySelectorAll('.category').forEach(cat => {
+                    cat.classList.remove('active');
+                });
+                
+                // Tambahkan kelas active ke kategori yang diklik
+                categoryEl.classList.add('active');
+                
                 currentFilter = category.id;
                 currentPage = 1; // Reset to page 1 when filter changes
                 changeSection('dashboard');
@@ -543,6 +557,7 @@ document.addEventListener('DOMContentLoaded', function() {
         renderAllTasks();
         renderPriorityTasks();
         renderCalendarTasks();
+        renderCategories();
     }
     
     // Render dashboard tasks
